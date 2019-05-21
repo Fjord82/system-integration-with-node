@@ -73,12 +73,40 @@ MongoClient.connect(connectionURL, { useNewUrlParser: true }, (error, client) =>
       });
       */
 
+      /*
       db.collection('customers').find({ age: 37 }).toArray((error, customers) => {
           console.log(customers);
       })
 
     db.collection('customers').find({ age: 37 }).count((error, count) => {
         console.log(count);
+    })*/
+
+    //---------------Update documents-------------------//
+   /* Single update
+    db.collection('customers').updateOne({
+        _id: new ObjectID("5ce43a034a6ca7bf57c3013f")
+    }, {
+        $inc: {
+            age: 1
+        }
+    }).then((result) => {
+        console.log(result)
+    }).catch((error) => {
+        console.log(error)
+    })
+    */
+
+    db.collection('customers').updateMany({
+        paid: false
+    }, {
+        $set: {
+            paid: true
+        }
+    }).then((result) => {
+        console.log(result.modifiedCount)
+    }).catch((error) => {
+        console.log(error)
     })
 
 });
