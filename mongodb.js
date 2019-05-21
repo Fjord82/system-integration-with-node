@@ -97,6 +97,7 @@ MongoClient.connect(connectionURL, { useNewUrlParser: true }, (error, client) =>
     })
     */
 
+    /*
     db.collection('customers').updateMany({
         paid: false
     }, {
@@ -105,6 +106,26 @@ MongoClient.connect(connectionURL, { useNewUrlParser: true }, (error, client) =>
         }
     }).then((result) => {
         console.log(result.modifiedCount)
+    }).catch((error) => {
+        console.log(error)
+    })
+    */
+
+    //-----------Deleating---------------//
+    /*
+    db.collection('customers').deleteMany({
+        age: 23
+    }).then((result) => {
+        console.log(result)
+    }).catch((error) => {
+        console.log(error)
+    })
+    */
+
+    db.collection('customers').deleteOne({
+        name: "JesperItWorks"
+    }).then((result) => {
+        console.log(result)
     }).catch((error) => {
         console.log(error)
     })
