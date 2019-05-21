@@ -3,7 +3,7 @@ const app = express();
 const port = 8080;
 
 app.get('/', (req, res) => {
-    res.send('System-integration exams project');
+    res.send('System-integration');
 });
 
 app.listen(port, () => {
