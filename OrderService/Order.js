@@ -8,7 +8,7 @@ mongoose.model("Order", {
     },
     ProductOrder: [{
         ProductId: {
-            type: Number,
+            type: String,
             require: true
         },
         Quantity: {
@@ -18,7 +18,7 @@ mongoose.model("Order", {
     }],
     Status: {
         type: String,
-        require: true
+        require: false
          /*cancelled,
         completed,
         shipped,

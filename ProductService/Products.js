@@ -14,8 +14,8 @@
         const Product = mongoose.model("Product");
 
         //Connect
-        mongoose.connect("mongodb+srv://new-user_31:new-user_31@miniproject-1ksmj.mongodb.net/test?retryWrites=true", () => {
-            console.log("DB is connected");
+        mongoose.connect("mongodb+srv://new-user_31:new-user_31@miniproject-1ksmj.mongodb.net/Product?retryWrites=true", () => {
+            console.log("DB is connected - Product Service");
         });
 
 app.get("/products", (req, res) => {
