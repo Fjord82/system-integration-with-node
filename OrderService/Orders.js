@@ -2,20 +2,29 @@ const express = require("express")
 const app = express()
 const bodyParser = require("body-parser")
 const mongoose = require("mongoose")
-const channel = require("./Publisher")
+const amqp = require("amqplib/callback_api");
 app.use(bodyParser.json())
+
+
+//Ampq connect
+amqp.connect("amqp://zbundxlc:KDCLeX8RyS5d4lvHp-oZYDxnT32wmOUQ@bear.rmq.cloudamqp.com/zbundxlc", (err, conn) => {
+    conn.createChannel((err, ch) => {
+        var queue = 'Firstqueue';
+        var message = { type: '2', content: 'Hello Rabbit'};
+
+        ch.assertQueue(queue, {durable: false});
+        ch.publish(queue, Buffer.from(JSON.stringify(message)));
+        console.log("Message was sent");
+    });
+    
+});
 
  //Connect
 mongoose.connect("mongodb+srv://new-user_31:new-user_31@miniproject-1ksmj.mongodb.net/Order?retryWrites=true", () => {
     console.log("DB is connected - Orders");
 });
-var oChannel;
 
 app.post("/order", (req, res) => {
-    if (!oChannel) {
-        oChannel = await channel();
-      }
-   
     var newOrder = {
         Date: req.body.Date,
         ProductOrder: req.body.ProductOrder,
@@ -30,7 +39,7 @@ app.post("/order", (req, res) => {
         throw err;
     });
 
-    res.send("Created Order!");
+    res.send("Order has been added!");
 })
 
 // Model is Loaded

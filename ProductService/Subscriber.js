@@ -1,46 +1,14 @@
-var amqp = require("amqplib/callback_api");
+//subscriber.js
+var jackrabbit = require('jackrabbit');
+var url = process.env.CLOUDAMQP_URL || "amqp://localhost";
 
-amqp.connect("amqp://localhost", function(error0, connection) {
-  if (error0) {
-    throw error0;
-  }
-  connection.createChannel(function(error1, channel) {
-    if (error1) {
-      throw error1;
-    }
-    var exchange = "logs";
+var rabbit = jackrabbit(url);
+var exchange = rabbit.default();
 
-    channel.assertExchange(exchange, "fanout", {
-      durable: false
-    });
+var hello = exchange.queue({ name: 'example_queue', durable: true });
+hello.consume(onMessage);
 
-    channel.assertQueue(
-      "",
-      {
-        exclusive: true
-      },
-      function(error2, q) {
-        if (error2) {
-          throw error2;
-        }
-        console.log(
-          " [*] Waiting for messages in %s. To exit press CTRL+C",
-          q.queue
-        );
-        channel.bindQueue(q.queue, exchange, "");
-
-        channel.consume(
-          q.queue,
-          function(msg) {
-            if (msg.content) {
-              console.log(" [x] %s", msg.content.toString());
-            }
-          },
-          {
-            noAck: true
-          }
-        );
-      }
-    );
-  });
-});
+function onMessage(data,ack) {
+  console.log('received:', data);
+  ack();
+}
