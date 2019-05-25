@@ -2,22 +2,11 @@ const express = require("express")
 const app = express()
 const bodyParser = require("body-parser")
 const mongoose = require("mongoose")
-const amqp = require("amqplib/callback_api");
+const MP = require('./Message_publisher.js');
 app.use(bodyParser.json())
 
 
-//Ampq connect
-amqp.connect("amqp://zbundxlc:KDCLeX8RyS5d4lvHp-oZYDxnT32wmOUQ@bear.rmq.cloudamqp.com/zbundxlc", (err, conn) => {
-    conn.createChannel((err, ch) => {
-        var queue = 'Firstqueue';
-        var message = { type: '2', content: 'Hello Rabbit'};
 
-        ch.assertQueue(queue, {durable: false});
-        ch.publish(queue, Buffer.from(JSON.stringify(message)));
-        console.log("Message was sent");
-    });
-    
-});
 
  //Connect
 mongoose.connect("mongodb+srv://new-user_31:new-user_31@miniproject-1ksmj.mongodb.net/Order?retryWrites=true", () => {
@@ -30,9 +19,9 @@ app.post("/order", (req, res) => {
         ProductOrder: req.body.ProductOrder,
         Status: req.body.Status
     }
-
     var order = new Order(newOrder);
-
+    console.log(order.ProductOrder);
+    MP.publish('orderKey', order.ProductOrder);
     order.save().then(() => {
         console.log("Order created with succes")
     }).catch((err) => {

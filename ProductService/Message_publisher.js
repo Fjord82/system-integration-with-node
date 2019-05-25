@@ -7,8 +7,8 @@ module.exports.publish = function(msgKey, msgPayload )
 {   
   amqp.connect(amqp_url, function(err, conn) {
       conn.createChannel(function(err, ch) {
-        const exch = 'Orderexc';
-
+        const exch = 'confirmOrderExc';
+        
         ch.assertExchange(exch, 'direct', {durable: true});
         try {
             ch.publish(exch, msgKey, Buffer.from(JSON.stringify(msgPayload)));
