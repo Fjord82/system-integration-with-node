@@ -3,12 +3,9 @@ const app = express();
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const MP = require("./Message_publisher.js");
-app.use(bodyParser.json());
+const ML = require("./Message_listener");
 
-// receive events
-const qname = "orderQ";
-const msgKey = "orderKey";
-const ex = "Orderexc";
+app.use(bodyParser.json());
 
 //Connect
 mongoose.connect(
@@ -26,15 +23,19 @@ app.post("/order", (req, res) => {
   };
   var order = new Order(newOrder);
   console.log(order.ProductOrder);
-  MP.publish("orderKey", order.ProductOrder);
-  order
-    .save()
-    .then(() => {
-      console.log("Order created with succes");
-    })
-    .catch(err => {
-      throw err;
+  MP.publish("orderKey", order.ProductOrder).then(function() {
+    ML.consume().then(res => {
+      console.log(res);
+      order
+        .save()
+        .then(() => {
+          console.log("Order created with succes");
+        })
+        .catch(err => {
+          throw err;
+        });
     });
+  });
 
   res.send("Order has been added!");
 });
