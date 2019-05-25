@@ -4,6 +4,7 @@
         const app = express();
         const bodyParser = require("body-parser"); 
 
+        const ML = require("./Message_listener");
         app.use(bodyParser.json());
 
 // Load mongoose
@@ -17,6 +18,8 @@
         mongoose.connect("mongodb+srv://new-user_31:new-user_31@miniproject-1ksmj.mongodb.net/Product?retryWrites=true", () => {
             console.log("DB is connected - Product Service");
         });
+
+        ML.consume("orderQ", "orderKey", "Orderexc");
 
 app.get("/products", (req, res) => {
 Product.find().then((products) => {
