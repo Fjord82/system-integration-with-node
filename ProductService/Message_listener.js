@@ -1,12 +1,11 @@
-// Loading amqp
-const amqp = require("amqplib/callback_api");
-
+var amqp = require("amqplib/callback_api");
 // Load mongoose
 const mongoose = require("mongoose");
-
+const MP = require("./Message_publisher");
 // Using the Product Model
 require("./Product");
 const Product = mongoose.model("Product");
+Isapproved = true;
 
 //Connect
 mongoose.connect(
@@ -21,38 +20,50 @@ module.exports.consume = function(ex, qname, msgKey) {
   amqp.connect(amqp_url, function(err, conn) {
     conn.createChannel(function(err, ch) {
       ch.assertExchange(ex, "direct", { durable: true });
-      ch.assertQueue(qname, { exclusive: false }, function(err, q) {
-        console.log(
-          " [*] Waiting for messages in %s. To exit press CTRL+C",
-          q.queue
-        );
-        ch.bindQueue(q.queue, ex, msgKey);
-        ch.consume(q.queue, function(msg) {
-          var msgJson = JSON.parse(msg.content.toString());
-          msgJson.forEach(product => {
-            console.log("Product: ", product);
-            var ProductId = product.ProductId;
-            var Quantity = product.Quantity;
-            console.log(ProductId);
-            Product.findById(ProductId).then(res => {
-              var itemsInStock = res.ItemsInStock;
-              var itemsReserved = res.ItemsReserved;
-              if (itemsInStock - itemsReserved < Quantity) {
-                console.log("Not enough items in stock");
-              } else {
-                itemsReserved = itemsReserved + Quantity;
-
-                console.log("Enough product to complete the order!");
-                Product.findByIdAndUpdate(ProductId, {
-                  ItemsReserved: itemsReserved
-                }).then(function() {
-                  console.log("completed");
+      ch.assertQueue(
+        qname,
+        { exclusive: false },
+        function(err, q) {
+          console.log(
+            " [*] Waiting for messages in %s. To exit press CTRL+C",
+            q.queue
+          );
+          ch.bindQueue(q.queue, ex, msgKey);
+          ch.consume(
+            q.queue,
+            function(msg) {
+              ch.ack(msg);
+              var msgJson = JSON.parse(msg.content.toString());
+              console.log(msgJson);
+              msgJson.forEach(product => {
+                Product.findById(product.ProductId).then(res => {
+                  if (res.ItemsInStock < res.ItemsReserved + product.Quantity) {
+                    Isapproved = false;
+                  }
                 });
+              });
+
+              if (Isapproved) {
+                console.log("1");
+
+                msgJson.forEach(product => {
+                  Product.findByIdAndUpdate(product.ProductId, {
+                    ItemsReserved: product.ItemsReserved + product.Quantity
+                  });
+                  console.log("product:", product);
+                });
+                console.log("1");
+                MP.publish("statusOrder", "completed");
+              } else {
+                console.log("2");
+
+                MP.publish("statusOrder", "cancelled");
               }
-            });
-          });
-        });
-      });
+            }
+          );
+        }
+      );
     });
   });
 };
+

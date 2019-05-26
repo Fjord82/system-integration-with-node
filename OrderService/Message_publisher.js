@@ -1,9 +1,10 @@
 
 const amqp = require('amqplib/callback_api');
 
-const amqp_url = "amqp://auspdbep:c3dBw8zAlGxWmmeBiIMOT4l559Ohz7yT@macaw.rmq.cloudamqp.com/auspdbep";
+const amqp_url = "amqp://auspdbep:c3dBw8zAlGxWmmeBiIMO" +
+"T4l559Ohz7yT@macaw.rmq.cloudamqp.com/auspdbep";
 
-module.exports.publish = function(msgKey, msgPayload )
+module.exports.publish = function(msgKey, msgPayload)
 {   
   amqp.connect(amqp_url, function(err, conn) {
       conn.createChannel(function(err, ch) {
