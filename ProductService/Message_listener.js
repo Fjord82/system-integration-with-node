@@ -1,9 +1,8 @@
-const MP = require("./Message_publisher.js");
+// Loading amqp
+const amqp = require("amqplib/callback_api");
 
-var amqp = require("amqplib/callback_api");
 // Load mongoose
 const mongoose = require("mongoose");
-
 
 // Using the Product Model
 require("./Product");
@@ -17,7 +16,6 @@ mongoose.connect(
   }
 );
 module.exports.consume = function(ex, qname, msgKey) {
-  const Isapproved = true;
   const amqp_url =
     "amqp://auspdbep:c3dBw8zAlGxWmmeBiIMOT4l559Ohz7yT@macaw.rmq.cloudamqp.com/auspdbep";
   amqp.connect(amqp_url, function(err, conn) {
@@ -32,23 +30,27 @@ module.exports.consume = function(ex, qname, msgKey) {
         ch.consume(q.queue, function(msg) {
           var msgJson = JSON.parse(msg.content.toString());
           msgJson.forEach(product => {
+            console.log("Product: ", product);
+            var ProductId = product.ProductId;
+            var Quantity = product.Quantity;
+            console.log(ProductId);
+            Product.findById(ProductId).then(res => {
+              var itemsInStock = res.ItemsInStock;
+              var itemsReserved = res.ItemsReserved;
+              if (itemsInStock - itemsReserved < Quantity) {
+                console.log("Not enough items in stock");
+              } else {
+                itemsReserved = itemsReserved + Quantity;
 
-            Product.findById(product.ProductId).then(res => {
-                
-              if (res.ItemsInStock - res.ItemsReserved < product.Quantity) {
-                    Isapproved = false;
-                    MP.publish("statusOrder", "cancelled");
+                console.log("Enough product to complete the order!");
+                Product.findByIdAndUpdate(ProductId, {
+                  ItemsReserved: itemsReserved
+                }).then(function() {
+                  console.log("completed");
+                });
               }
             });
           });
-          if(Isapproved) {
-              msgJson.forEach(product => {
-                Product.findByIdAndUpdate(product.ProductId, {
-                  }).then(function() {
-                      MP.publish("statusOrder","completed");
-                  });
-              });
-          }
         });
       });
     });
