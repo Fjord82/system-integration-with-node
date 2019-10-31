@@ -23,6 +23,6 @@
     "express": "^4.16.4",
     "jackrabbit": "^4.4.0",
     "mongodb": "^3.1.10",
-    "mongoose": "^5.5.11"
+    "mongoose": "^5.7.5"
   }
 }
